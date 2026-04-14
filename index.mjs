@@ -54,9 +54,17 @@ const pool = mysql.createPool({
 // Routes
 // ========================
 
-// Routes
+// Root: Login page
 app.get("/", (req, res) => {
-    res.send("Hello, Express app!");
+    res.render("login");
+});
+
+// Login route
+app.post("/login", (req, res) => {
+    let username = req.body.username;
+    let password = req.body.password;
+    console.log(password);
+    res.render("welcome");
 });
 
 // Verify database connectivity
