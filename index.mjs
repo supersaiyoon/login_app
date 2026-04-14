@@ -4,6 +4,7 @@
 
 import express from "express";       // Server
 import mysql from 'mysql2/promise';  // Database
+import bcrypt from "bcrypt";         // Password hashing
 
 
 // ========================
@@ -60,11 +61,30 @@ app.get("/", (req, res) => {
 });
 
 // Login route
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
     let username = req.body.username;
     let password = req.body.password;
-    console.log(password);
-    res.render("welcome");
+
+    let passwordHash = "";
+
+    let sql = `SELECT *
+               FROM admin
+               WHERE username = ?`;
+
+    const [rows] = await pool.query(sql, [username]);
+
+    if (rows.length > 0) {
+        passwordHash = rows[0].password;
+    }
+
+    let match = await bcrypt.compare(password, passwordHash);
+
+    if (match) {
+        res.render("welcome");
+    }
+    else {
+        res.redirect("/");
+    }
 });
 
 // Verify database connectivity
