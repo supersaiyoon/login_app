@@ -2,9 +2,10 @@
 // Imports
 // ========================
 
-import express from "express";       // Server
-import mysql from 'mysql2/promise';  // Database
-import bcrypt from "bcrypt";         // Password hashing
+import express from "express";         // Server
+import mysql from 'mysql2/promise';    // Database
+import bcrypt from "bcrypt";           // Password hashing
+import session from "express-session"; // Session management
 
 
 // ========================
@@ -27,14 +28,30 @@ const app = express();
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 
+// For Express to get values using POST method
+app.use(express.urlencoded({ extended: true }));
+
+// Session management
+app.set("trust proxy", 1);
+app.use(session({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: true,
+}));
+
 
 // ========================
 // Middleware
 // ========================
 
-// For Express to get values using POST method
-app.use(express.urlencoded({ extended: true }));
-
+function isAuthenticated(req, res, next) {
+    if (!req.session.authenticated) {
+        res.redirect("/");
+    }
+    else {
+        next();
+    }
+}
 
 // ========================
 // Database
@@ -80,11 +97,16 @@ app.post("/login", async (req, res) => {
     let match = await bcrypt.compare(password, passwordHash);
 
     if (match) {
+        req.session.authenticated = true;
         res.render("welcome");
     }
     else {
         res.redirect("/");
     }
+});
+
+app.get("/myProfile", isAuthenticated, (req, res) => {
+    res.render("profile");
 });
 
 // Verify database connectivity
