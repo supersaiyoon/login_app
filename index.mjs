@@ -77,7 +77,7 @@ app.get("/", (req, res) => {
     res.render("login");
 });
 
-// Login route
+// Login
 app.post("/login", async (req, res) => {
     let username = req.body.username;
     let password = req.body.password;
@@ -107,6 +107,11 @@ app.post("/login", async (req, res) => {
 
 app.get("/myProfile", isAuthenticated, (req, res) => {
     res.render("profile");
+});
+
+app.get("/logout", isAuthenticated, (req, res) => {
+    req.session.destroy();
+    res.redirect("/");
 });
 
 // Verify database connectivity
